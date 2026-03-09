@@ -1,0 +1,15 @@
+{
+  "name": "fitness-tracker-mvp-backend",
+  "version": "1.0.0",
+  "description": "FitTrack MVP - AWS Lambda backend",
+  "scripts": {
+    "deploy": "serverless deploy --stage dev",
+    "deploy:prod": "serverless deploy --stage prod",
+    "remove": "serverless remove --stage dev",
+    "logs": "serverless logs -f getDailyCalories --stage dev --tail"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-python-requirements": "^6.1.2"
+  }
+}

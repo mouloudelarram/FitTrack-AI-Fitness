@@ -1,0 +1,1 @@
+ C:\\Users\\moulo\\Desktop\\ADE716\\Fil\ rouge\\code\\FitTrack\\mobile_app\\.dart_tool\\flutter_build\\fbaa13a4e28a45784f24449c687564fa\\native_assets.json: 
