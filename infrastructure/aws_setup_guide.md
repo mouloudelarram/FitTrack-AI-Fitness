@@ -115,6 +115,38 @@ Stack Outputs:
   ApiGatewayUrl: https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev
 ```
 
+###### serverless deploy --stage dev --region us-east-1
+###### 
+###### Deploying fitness-tracker-mvp to stage dev (us-east-1)
+###### 
+###### ✔ Service deployed to stack fitness-tracker-mvp-dev (148s)
+###### 
+###### endpoints:
+######   GET - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/profile
+######   POST - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/profile
+######   PUT - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/profile
+######   GET - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/food-logs
+######   POST - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/food-logs
+######   DELETE - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/food-logs/{log_id}
+######   GET - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/dashboard
+######   GET - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/weight-logs
+######   POST - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/weight-logs
+######   POST - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/images/upload
+######   GET - https://9mx7n208r4.execute-api.us-east-1.amazonaws.com/dev/images/download
+###### functions:
+######   createUserProfile: fitness-tracker-mvp-dev-createUserProfile (17 ###### MB)                                                                                                                       ######       
+######   addFoodLog: fitness-tracker-mvp-dev-addFoodLog (17 MB)
+######   getDailyCalories: fitness-tracker-mvp-dev-getDailyCalories (17 MB)
+######   logWeight: fitness-tracker-mvp-dev-logWeight (17 MB)
+######   uploadFoodImage: fitness-tracker-mvp-dev-uploadFoodImage (17 MB)
+###### layers:
+######   pythonRequirements: arn:aws:lambda:us-east-1:898774460129:layer:fitness-tracker-mvp-dev-python-requirements:2                                 ######                                                    
+###### 
+###### 1 deprecation found: run 'serverless doctor' for more details                                                                                                                     ######                  
+###### 
+###### Need a faster logging experience than CloudWatch? Try our Dev Mode in Console: run "serverless dev"
+
+
 ---
 
 ## STEP 4 — Save Important Values

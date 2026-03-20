@@ -60,6 +60,9 @@ custom:
     dockerizePip: false
     zip: true
     layer: true
+    slim: true
+    useStaticCache: false      # ← disables the symlink cache
+    useDownloadCache: false    # ← avoids the locked cache folder
 
 package:
   individually: false

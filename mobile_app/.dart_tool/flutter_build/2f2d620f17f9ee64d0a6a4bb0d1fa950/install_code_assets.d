@@ -1,1 +1,0 @@
- C:\\Users\\moulo\\Desktop\\ADE716\\Fil\ rouge\\code\\MyFitenessPalClone\\fitness-tracker-mvp\\fitness-tracker-mvp\\mobile_app\\.dart_tool\\flutter_build\\2f2d620f17f9ee64d0a6a4bb0d1fa950\\native_assets.json: 
