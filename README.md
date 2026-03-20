@@ -289,3 +289,32 @@ zip -r fitness-tracker-mvp.zip fitness-tracker-mvp/ \
 **DynamoDB errors** → Check Lambda logs in CloudWatch
 
 **Flutter pub get fails** → Run `flutter doctor` and resolve issues first
+
+---
+
+## Frontend Web App
+
+`frontend_web` is a React + Vite + TypeScript + Tailwind web client that uses the same Cognito user pool and API Gateway backend as the Flutter app.
+
+### Web App Setup
+
+```bash
+cd frontend_web
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+If you are on Windows PowerShell, use:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+### How It Connects To The Backend
+
+- `VITE_API_BASE_URL` points at the existing serverless backend
+- `VITE_COGNITO_REGION`, `VITE_COGNITO_USER_POOL_ID`, and `VITE_COGNITO_CLIENT_ID` point at the same Cognito setup used by `mobile_app`
+- `VITE_ML_API_URL` is optional and can point to the local FastAPI calorie predictor under `models`; this predictor is not currently exposed by `backend/serverless.yml`
+
+See `frontend_web/README.md` for the verified API/auth contract and the full web-app setup notes.

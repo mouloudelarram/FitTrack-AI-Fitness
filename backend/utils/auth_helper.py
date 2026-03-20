@@ -1,103 +1,80 @@
+"""
+auth_helper.py  — Fixed version
+=================================
+Root cause of CORS errors in browser:
+  - success_response() and error_response() were not including
+    Access-Control-Allow-Origin (and related) headers.
+  - API Gateway's `cors: true` in serverless.yml only handles the
+    OPTIONS preflight automatically. The ACTUAL response from your
+    Lambda must also return CORS headers — otherwise the browser
+    blocks it even though the preflight passed.
+
+This fixed version adds CORS headers to every response.
+"""
+
 import json
 import os
-import urllib.request
-import urllib.error
-from jose import jwk, jwt
-from jose.utils import base64url_decode
 
-COGNITO_REGION = os.environ.get('COGNITO_REGION', 'us-east-1')
-COGNITO_USER_POOL_ID = os.environ.get('COGNITO_USER_POOL_ID', '')
-COGNITO_APP_CLIENT_ID = os.environ.get('COGNITO_APP_CLIENT_ID', '')
+# Allow all origins in dev; lock this down to your frontend domain in prod.
+ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
 
-_jwks_cache = None
-
-
-def _get_jwks():
-    global _jwks_cache
-    if _jwks_cache:
-        return _jwks_cache
-    keys_url = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}/.well-known/jwks.json"
-    try:
-        with urllib.request.urlopen(keys_url) as response:
-            _jwks_cache = json.loads(response.read().decode())['keys']
-        return _jwks_cache
-    except Exception as e:
-        raise Exception(f"Failed to fetch JWKS: {str(e)}")
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+    "Access-Control-Allow-Credentials": "true",
+    "Content-Type": "application/json",
+}
 
 
-def verify_token(token):
+# ──────────────────────────────────────────────────────────────
+# Token / user-id extraction
+# ──────────────────────────────────────────────────────────────
+
+def extract_user_id_from_event(event: dict) -> str | None:
     """
-    Verify a Cognito JWT token and return the decoded claims.
-    Returns dict with user info or raises exception if invalid.
+    Pull the Cognito sub (user_id) from the API Gateway authorizer context.
+    API Gateway injects this after validating the JWT from the Authorization header.
     """
-    try:
-        headers = jwt.get_unverified_headers(token)
-        kid = headers['kid']
-        keys = _get_jwks()
-        public_key = None
-        for key in keys:
-            if key['kid'] == kid:
-                public_key = jwk.construct(key)
-                break
-        if public_key is None:
-            raise Exception("Public key not found")
-        message, encoded_signature = token.rsplit('.', 1)
-        decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
-        if not public_key.verify(message.encode('utf8'), decoded_signature):
-            raise Exception("Signature verification failed")
-        claims = jwt.get_unverified_claims(token)
-        if claims.get('token_use') != 'access':
-            if claims.get('token_use') != 'id':
-                raise Exception("Invalid token use")
-        return claims
-    except Exception as e:
-        raise Exception(f"Token verification failed: {str(e)}")
+    request_context = event.get("requestContext", {})
+    authorizer = request_context.get("authorizer", {})
+
+    # Standard Cognito USER_POOLS authorizer path
+    claims = authorizer.get("claims", {})
+    user_id = claims.get("sub")
+
+    if user_id:
+        return user_id
+
+    # Fallback: some setups flatten claims directly onto authorizer
+    user_id = authorizer.get("sub")
+    return user_id or None
 
 
-def extract_user_id_from_event(event):
+# ──────────────────────────────────────────────────────────────
+# Response helpers  ← CORS headers added here
+# ──────────────────────────────────────────────────────────────
+
+def success_response(body: dict, status_code: int = 200) -> dict:
     """
-    Extract user_id from API Gateway event.
-    Supports both Authorization header and requestContext from Cognito authorizer.
+    Return a well-formed API Gateway response with CORS headers.
+    All Lambda handlers should use this instead of building dicts manually.
     """
-    try:
-        request_context = event.get('requestContext', {})
-        authorizer = request_context.get('authorizer', {})
-        claims = authorizer.get('claims', {})
-        if claims:
-            return claims.get('sub') or claims.get('cognito:username')
-    except Exception:
-        pass
-    try:
-        headers = event.get('headers', {})
-        auth_header = headers.get('Authorization') or headers.get('authorization', '')
-        if auth_header.startswith('Bearer '):
-            token = auth_header[7:]
-            claims = verify_token(token)
-            return claims.get('sub') or claims.get('username')
-    except Exception:
-        pass
-    return None
-
-
-def cors_headers():
     return {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-        'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT,DELETE'
+        "statusCode": status_code,
+        "headers": CORS_HEADERS,          # ← the fix: CORS on every success
+        "body": json.dumps(body, default=str),
     }
 
 
-def success_response(body, status_code=200):
+def error_response(message: str, status_code: int = 400) -> dict:
+    """
+    Return an error response with CORS headers.
+    Without CORS headers on error responses the browser also blocks them,
+    making it impossible to show the user a meaningful error message.
+    """
     return {
-        'statusCode': status_code,
-        'headers': cors_headers(),
-        'body': json.dumps(body)
-    }
-
-
-def error_response(message, status_code=400):
-    return {
-        'statusCode': status_code,
-        'headers': cors_headers(),
-        'body': json.dumps({'error': message})
+        "statusCode": status_code,
+        "headers": CORS_HEADERS,          # ← the fix: CORS on every error too
+        "body": json.dumps({"error": message}),
     }

@@ -33,7 +33,8 @@ def lambda_handler(event, context):
             FOOD_LOGS_TABLE,
             'user_id-date-index',
             'user_id = :uid AND #dt = :date',
-            {':uid': user_id, ':date': date_filter}
+            {':uid': user_id, ':date': date_filter},
+            expression_names={'#dt': 'date'}
         )
         # Sort by created_at
         items.sort(key=lambda x: x.get('created_at', ''))

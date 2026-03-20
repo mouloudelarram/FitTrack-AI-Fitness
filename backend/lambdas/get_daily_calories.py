@@ -17,7 +17,8 @@ def get_calories_for_date(user_id, date):
         FOOD_LOGS_TABLE,
         'user_id-date-index',
         'user_id = :uid AND #dt = :date',
-        {':uid': user_id, ':date': date}
+        {':uid': user_id, ':date': date},
+        expression_names={'#dt': 'date'}
     )
     total = sum(int(item.get('calories', 0)) for item in items)
     breakdown = {}

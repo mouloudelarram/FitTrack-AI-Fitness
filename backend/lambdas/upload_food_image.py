@@ -93,7 +93,8 @@ def lambda_handler(event, context):
             Conditions=[
                 {'Content-Type': content_type},
                 ['content-length-range', 1, 10 * 1024 * 1024],  # Max 10MB
-                {'x-amz-meta-user-id': user_id}
+                {'x-amz-meta-user-id': user_id},
+                {'x-amz-meta-upload-timestamp': metadata['upload-timestamp']},  # ← FIX: must match Fields
             ],
             ExpiresIn=300  # 5 minutes to complete upload
         )

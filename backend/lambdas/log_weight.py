@@ -63,7 +63,7 @@ def lambda_handler(event, context):
 
     # POST - log weight
     try:
-        body = json.loads(event.get('body', '{}'))
+        body = json.loads(event.get('body') or '{}')
     except json.JSONDecodeError:
         return error_response("Invalid JSON body")
 
@@ -105,14 +105,14 @@ def lambda_handler(event, context):
 
     put_item(WEIGHT_LOGS_TABLE, log_entry)
 
-    # Update current weight in user profile
+    # Update current weight in user profile (non-critical)
     try:
         update_item(
             USERS_TABLE,
             {'user_id': user_id},
             "SET #w = :weight, updated_at = :updated",
             {':weight': weight_kg, ':updated': datetime.utcnow().isoformat()},
-            {'#w': 'weight'}
+            {'#w': 'weight'}   # 'weight' is a DynamoDB reserved word — alias required
         )
     except Exception:
         pass  # Non-critical update

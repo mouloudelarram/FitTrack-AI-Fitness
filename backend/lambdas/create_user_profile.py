@@ -41,12 +41,14 @@ def lambda_handler(event, context):
     if not user_id:
         return error_response("Unauthorized", 401)
 
+    http_method = event.get('httpMethod', 'POST')
+
+    # body is None on GET requests — parse only when present
+    raw_body = event.get('body') or '{}'
     try:
-        body = json.loads(event.get('body', '{}'))
+        body = json.loads(raw_body)
     except json.JSONDecodeError:
         return error_response("Invalid JSON body")
-
-    http_method = event.get('httpMethod', 'POST')
 
     if http_method == 'GET':
         existing = get_item(USERS_TABLE, {'user_id': user_id})
@@ -78,7 +80,7 @@ def lambda_handler(event, context):
             ':activity': activity_level,
             ':updated': datetime.utcnow().isoformat()
         }
-        expression_names = {'#w': 'weight'}
+        expression_names = {'#w': 'weight'}   # 'weight' is a DynamoDB reserved word
         update_item(USERS_TABLE, {'user_id': user_id}, update_expression, expression_values, expression_names)
         updated = get_item(USERS_TABLE, {'user_id': user_id})
         return success_response(updated)
