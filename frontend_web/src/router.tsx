@@ -2,6 +2,7 @@ import { Navigate, Outlet, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/components/layout/app-shell";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { DashboardPage } from "@/pages/dashboard-page";
+import { ForgotPasswordPage } from "@/pages/forgot-password-page";
 import { LoginPage } from "@/pages/login-page";
 import { MealsPage } from "@/pages/meals-page";
 import { NotFoundPage } from "@/pages/not-found-page";
@@ -63,6 +64,10 @@ export const appRouter = createBrowserRouter([
       {
         path: "/signup",
         element: <SignupPage />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
       },
     ],
   },

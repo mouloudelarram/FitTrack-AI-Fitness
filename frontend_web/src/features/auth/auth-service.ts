@@ -1,6 +1,8 @@
 import {
+  ConfirmForgotPasswordCommand,
   CognitoIdentityProviderClient,
   ConfirmSignUpCommand,
+  ForgotPasswordCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
   ResendConfirmationCodeCommand,
@@ -106,6 +108,34 @@ export async function resendConfirmationCode(email: string) {
       new ResendConfirmationCodeCommand({
         ClientId: env.cognitoClientId,
         Username: email,
+      }),
+    );
+  } catch (error) {
+    throw new Error(friendlyAuthError(error));
+  }
+}
+
+export async function forgotPassword(email: string) {
+  try {
+    await cognitoClient.send(
+      new ForgotPasswordCommand({
+        ClientId: env.cognitoClientId,
+        Username: email,
+      }),
+    );
+  } catch (error) {
+    throw new Error(friendlyAuthError(error));
+  }
+}
+
+export async function confirmForgotPassword(email: string, confirmationCode: string, newPassword: string) {
+  try {
+    await cognitoClient.send(
+      new ConfirmForgotPasswordCommand({
+        ClientId: env.cognitoClientId,
+        Username: email,
+        ConfirmationCode: confirmationCode,
+        Password: newPassword,
       }),
     );
   } catch (error) {
