@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -46,6 +47,26 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openForgotPassword() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => ForgotPasswordScreen(initialEmail: _emailCtrl.text.trim()),
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && mounted) {
+      setState(() {
+        _emailCtrl.text = result;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset complete. Please sign in.'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
@@ -109,7 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isLoading ? null : _openForgotPassword,
+                        child: const Text('Forgot password?'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
