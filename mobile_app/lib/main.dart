@@ -43,7 +43,7 @@ Future<void> _configureAmplify() async {
         },
         "Auth": {
           "Default": {
-            "authenticationFlowType": "USER_SRP_AUTH",
+            "authenticationFlowType": "USER_PASSWORD_AUTH",
             "loginMechanisms": ["EMAIL"],
             "signupAttributes": ["EMAIL"],
             "passwordProtectionSettings": {

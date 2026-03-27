@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
-import 'login_screen.dart';
+import 'dashboard_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -101,11 +101,11 @@ class _SignupScreenState extends State<SignupScreen> {
         );
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
             (route) => false,
           );
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created! Please sign in.'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('Account created!'), backgroundColor: Colors.green),
           );
         }
       }
@@ -290,7 +290,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _gender,
+            initialValue: _gender,
             decoration: const InputDecoration(labelText: 'Gender', prefixIcon: Icon(Icons.wc)),
             items: const [
               DropdownMenuItem(value: 'male', child: Text('Male')),
@@ -300,7 +300,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _activityLevel,
+            initialValue: _activityLevel,
             decoration: const InputDecoration(labelText: 'Activity Level', prefixIcon: Icon(Icons.directions_run)),
             items: const [
               DropdownMenuItem(value: 'sedentary', child: Text('Sedentary (little/no exercise)')),

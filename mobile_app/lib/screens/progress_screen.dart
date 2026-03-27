@@ -190,18 +190,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
           // Period selector
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text('Weight History', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Weight History',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
               SegmentedButton<int>(
                 style: SegmentedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: const Size(0, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                  minimumSize: const Size(0, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 segments: const [
-                  ButtonSegment(value: 7, label: Text('7d')),
-                  ButtonSegment(value: 30, label: Text('30d')),
-                  ButtonSegment(value: 90, label: Text('90d')),
+                  ButtonSegment(value: 7, label: Text('7d', style: TextStyle(fontSize: 12))),
+                  ButtonSegment(value: 30, label: Text('30d', style: TextStyle(fontSize: 12))),
+                  ButtonSegment(value: 90, label: Text('90d', style: TextStyle(fontSize: 12))),
                 ],
                 selected: {_selectedDays},
                 onSelectionChanged: (s) {
@@ -274,7 +281,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             dotData: FlDotData(show: _weightLogs.length <= 10),
                             belowBarData: BarAreaData(
                               show: true,
-                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
                             ),
                           ),
                         ],
@@ -315,7 +322,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),

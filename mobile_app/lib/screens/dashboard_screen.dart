@@ -324,7 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Card(
         child: ListTile(
           leading: CircleAvatar(
-            backgroundColor: _mealColor(log.mealType).withOpacity(0.15),
+            backgroundColor: _mealColor(log.mealType).withValues(alpha: 0.15),
             child: Text(_mealIcon(log.mealType), style: const TextStyle(fontSize: 18)),
           ),
           title: Text(log.foodName, style: const TextStyle(fontWeight: FontWeight.w600)),

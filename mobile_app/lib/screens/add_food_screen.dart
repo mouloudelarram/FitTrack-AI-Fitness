@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
-import '../models/food_log.dart';
 
 class AddFoodScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -25,7 +24,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   String _mealType = 'breakfast';
   bool _isLoading = false;
   File? _selectedImage;
-  String? _uploadedImageUrl;
 
   static const List<Map<String, String>> _commonFoods = [
     {'name': 'Apple (medium)', 'calories': '95'},

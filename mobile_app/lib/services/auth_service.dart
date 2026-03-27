@@ -1,13 +1,12 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'user_id';
   static const String _userEmailKey = 'user_email';
 
-  // Sign up new user
   Future<SignUpResult> signUp({
     required String email,
     required String password,
@@ -27,7 +26,6 @@ class AuthService {
     }
   }
 
-  // Confirm sign up with OTP
   Future<SignUpResult> confirmSignUp({
     required String email,
     required String confirmationCode,
@@ -43,7 +41,6 @@ class AuthService {
     }
   }
 
-  // Sign in
   Future<SignInResult> signIn({
     required String email,
     required String password,
@@ -63,41 +60,68 @@ class AuthService {
     }
   }
 
-  // Sign out
   Future<void> signOut() async {
     try {
       await Amplify.Auth.signOut();
+    } on AuthException {
+      // Clearing local state is enough if the session is already invalid.
+    } finally {
       await _clearCachedUserInfo();
-    } on AuthException catch (e) {
-      throw Exception(e.message);
     }
   }
 
-  // Check if user is signed in
   Future<bool> isSignedIn() async {
     try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      return session.isSignedIn;
-    } catch (_) {
+      final session = await _fetchCognitoSession(forceRefresh: true);
+      final signedIn = session != null && session.isSignedIn;
+      if (signedIn) {
+        await _cacheUserInfo();
+      }
+      return signedIn;
+    } catch (error) {
+      _debug('Failed to verify session: $error');
       return false;
     }
   }
 
-  // Get current user token
-  Future<String?> getToken() async {
+  Future<String?> getIdToken({bool forceRefresh = false}) async {
     try {
-      final session = await Amplify.Auth.fetchAuthSession(
-        options: const FetchAuthSessionOptions(forceRefresh: false),
-      ) as CognitoAuthSession;
-      return session.userPoolTokensResult.value.accessToken.raw;
-    } catch (_) {
-      // Fallback to cached token
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_tokenKey);
+      final session = await _fetchCognitoSession(forceRefresh: forceRefresh);
+      return session?.userPoolTokensResult.value.idToken.raw;
+    } catch (error) {
+      _debug('Unable to fetch ID token: $error');
+      return null;
     }
   }
 
-  // Get current user ID (sub)
+  Future<String?> getAccessToken({bool forceRefresh = false}) async {
+    try {
+      final session = await _fetchCognitoSession(forceRefresh: forceRefresh);
+      return session?.userPoolTokensResult.value.accessToken.raw;
+    } catch (error) {
+      _debug('Unable to fetch access token: $error');
+      return null;
+    }
+  }
+
+  Future<List<String>> getAuthorizationCandidates({bool forceRefresh = false}) async {
+    final candidates = <String>[];
+    final idToken = await getIdToken(forceRefresh: forceRefresh);
+    final accessToken = await getAccessToken(forceRefresh: forceRefresh);
+
+    for (final candidate in [
+      idToken,
+      accessToken,
+      accessToken != null && accessToken.isNotEmpty ? 'Bearer $accessToken' : null,
+    ]) {
+      if (candidate != null && candidate.isNotEmpty && !candidates.contains(candidate)) {
+        candidates.add(candidate);
+      }
+    }
+
+    return candidates;
+  }
+
   Future<String?> getCurrentUserId() async {
     try {
       final user = await Amplify.Auth.getCurrentUser();
@@ -108,7 +132,6 @@ class AuthService {
     }
   }
 
-  // Get current user email
   Future<String?> getCurrentUserEmail() async {
     try {
       final attributes = await Amplify.Auth.fetchUserAttributes();
@@ -122,7 +145,6 @@ class AuthService {
     return prefs.getString(_userEmailKey);
   }
 
-  // Resend confirmation code
   Future<ResendSignUpCodeResult> resendConfirmationCode(String email) async {
     try {
       return await Amplify.Auth.resendSignUpCode(username: email);
@@ -131,7 +153,6 @@ class AuthService {
     }
   }
 
-  // Reset password
   Future<ResetPasswordResult> resetPassword(String email) async {
     try {
       return await Amplify.Auth.resetPassword(username: email);
@@ -140,7 +161,6 @@ class AuthService {
     }
   }
 
-  // Confirm reset password
   Future<ResetPasswordResult> confirmResetPassword({
     required String email,
     required String newPassword,
@@ -157,28 +177,44 @@ class AuthService {
     }
   }
 
+  Future<CognitoAuthSession?> _fetchCognitoSession({bool forceRefresh = false}) async {
+    final session = await Amplify.Auth.fetchAuthSession(
+      options: FetchAuthSessionOptions(forceRefresh: forceRefresh),
+    );
+
+    if (session is! CognitoAuthSession || !session.isSignedIn) {
+      return null;
+    }
+
+    return session;
+  }
+
   Future<void> _cacheUserInfo() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = await getToken();
-      if (token != null) {
-        await prefs.setString(_tokenKey, token);
-      }
       final userId = await getCurrentUserId();
-      if (userId != null) {
+      if (userId != null && userId.isNotEmpty) {
         await prefs.setString(_userIdKey, userId);
       }
+
       final email = await getCurrentUserEmail();
-      if (email != null) {
+      if (email != null && email.isNotEmpty) {
         await prefs.setString(_userEmailKey, email);
       }
-    } catch (_) {}
+    } catch (error) {
+      _debug('Unable to cache user info: $error');
+    }
   }
 
   Future<void> _clearCachedUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_userEmailKey);
+  }
+
+  void _debug(String message) {
+    if (kDebugMode) {
+      debugPrint('[AuthService] $message');
+    }
   }
 }
