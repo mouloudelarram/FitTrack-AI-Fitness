@@ -318,3 +318,12 @@ Copy-Item .env.example .env.local
 - `VITE_ML_API_URL` is optional and can point to the local FastAPI calorie predictor under `models`; this predictor is not currently exposed by `backend/serverless.yml`
 
 See `frontend_web/README.md` for the verified API/auth contract and the full web-app setup notes.
+
+# web app
+<img width="1588" height="725" alt="image" src="https://github.com/user-attachments/assets/f372170c-b89e-47b3-bf72-911c9bfecc15" />
+
+# mobil app
+<img width="380" height="787" alt="image" src="https://github.com/user-attachments/assets/6fa217e2-1517-4846-9a57-56affb233af2" />
+
+
+
